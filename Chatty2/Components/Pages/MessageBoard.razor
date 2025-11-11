@@ -1,4 +1,5 @@
 ﻿@page "/messageboard"
+@using Chatty2.Services
 
 <span style="padding-left:10px;">Message Board</span>
 <div class="message-list-wrapper">
@@ -75,10 +76,12 @@
 
 <div class="message-input">
     <textarea rows="1" @bind="NewMessageContent" @bind:event="oninput" maxlength="@MAX_TEXT_COUNT" placeholder="Type message..."></textarea>
-    <button @onclick="SendMessage">Send</button>
-    
+    <button @onclick="PostMessage">Post</button>
+
 </div>
 <span style="font-size:9px;margin-left:20px;">@(NewMessageContent.Length)/@(MAX_TEXT_COUNT)</span>
+
+
 
 @code {
     private List<Message> Messages { get; set; } = new List<Message>();
@@ -112,21 +115,27 @@
         // LastMessageDate = new DateTime(2000, 1, 1); Reset the tracker
     }
 
-    private void SendMessage()
+    private async Task PostMessage()
     {
         if (!string.IsNullOrWhiteSpace(NewMessageContent))
         {
-            // Get the next unique ID
-            int newId = Messages.Any() ? Messages.Max(m => m.Id) + 1 : 1;
-
-            Messages.Add(new Message
+            // Post the new message
+            await UTC_DB.InsertMessageAsync(new Message
             {
-                Id = newId,
+                // Id = newId,
                 Username = "You", // Or get the current logged-in user
                 Content = NewMessageContent,
                 Timestamp = DateTime.Now,
                 IsPinned = false
             });
+
+            //After posting need to reread the messages to re populate the list
+            Messages.Clear();
+            Messages = await UTC_DB.FetchMessagesAsync();
+
+            // Get the next unique ID???
+            int newId = Messages.Any() ? Messages.Max(m => m.Id) + 1 : 1;
+
             NewMessageContent = string.Empty; // Clear the input field
         }
     }
@@ -138,9 +147,9 @@
         {
             message.IsPinned = !message.IsPinned;
 
-    // The list will be re-sorted on every render, but we trigger it here
-    StateHasChanged();
-}
+            // The list will be re-sorted on every render, but we trigger it here
+            StateHasChanged();
+        }
     }
 }
 
@@ -150,14 +159,14 @@
         /* box-sizing: border-box; */
         border: 1px solid red;
         border-bottom: none;
+        margin: 10px;
+        margin-bottom: 0px;
         padding: 10px;
         height: 400px; /* Fixed height for the viewport */
         overflow-y: auto; /* Apply the scrollbar here */
         display: flex;
         flex-direction: column;
-        /* margin-bottom: 10px; */
         background-color: #fff;
-        /* border-radius: 5px; */
         border-top-left-radius: 5px;
         border-top-right-radius: 5px;
         font-size: 12px;
@@ -203,14 +212,15 @@
     .message-row {
         display: flex;
         align-items: flex-start;
-        gap: 8px;
+        gap: 2px;
         width: 100%; /* ensure the row fills the item */
     }
+
     .message-body {
         /* border: 1px solid; */
         border-radius: 5px;
-        padding:  5px 10px;
-        background-color:#eee;
+        padding: 5px 10px;
+        background-color: #eee;
         color: #333;
         flex: 1 1 auto; /* stretch to fill remaining space */
         min-width: 0; /* allow shrinking inside flex container */
@@ -232,14 +242,14 @@
             box-shadow: none;
         }
 
-        /* Keep an accessible visible focus for keyboard users */
-        /* .pin-button:focus-visible {
-            outline: 2px solid rgba(0, 123, 255, 0.6);
-            outline-offset: 2px;
-            box-shadow: none !important;
-        } */
+    /* Keep an accessible visible focus for keyboard users */
+    /* .pin-button:focus-visible {
+                outline: 2px solid rgba(0, 123, 255, 0.6);
+                outline-offset: 2px;
+                box-shadow: none !important;
+            } */
 
-    
+
 
     .sender {
         /* font-weight: bold; */
@@ -260,19 +270,19 @@
     }
 
     /* .date-separator {
-        text-align: center;
-        margin: 15px 0;
-        position: relative;
-        font-size: 0.8em;
-        color: #777;
-    } */
+            text-align: center;
+            margin: 15px 0;
+            position: relative;
+            font-size: 0.8em;
+            color: #777;
+        } */
 
     .message-input {
         display: flex;
         align-items: center;
-        /* background-color: green; */
+        margin-left: 10px;
+        margin-right: 10px;
         border: 1px solid red;
-        /* border-radius: 5px; */
         border-bottom-left-radius: 5px;
         border-bottom-right-radius: 5px;
         overflow: hidden;
@@ -289,9 +299,9 @@
             resize: none; /* Disable manual resizing */
         }
 
-            /* .message-input textarea:focus {
-             
-            } */
+        /* .message-input textarea:focus {
+
+                } */
 
         .message-input button {
             background-color: #007bff;
@@ -300,7 +310,7 @@
             padding: 2px 5px;
             cursor: pointer;
             border-radius: 3px;
-            font-size:12px;
+            font-size: 12px;
         }
 
             .message-input button:hover {

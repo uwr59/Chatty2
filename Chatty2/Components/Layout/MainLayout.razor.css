@@ -1,11 +1,24 @@
 .page {
-    position: relative;
+/*    position: relative;
     display: flex;
-    flex-direction: column;
+    flex-direction: column;*/
+    /* Set .page as a flex container */
+    display: flex;
+    flex-direction: row;
+    /* The main container should span the full viewport height */
+    height: 100vh;
 }
 
 main {
-    flex: 1;
+/*    flex: 1;*/
+    /* The main content area should take up all remaining horizontal space */
+    flex-grow: 1;
+    /* The main area must also be a flex container to manage its children vertically */
+    display: flex;
+    flex-direction: column;
+    /* Make it fill the available height */
+    height: 100%;
+    overflow-y: auto; /* Allows content area to scroll if needed */
 }
 
 .sidebar {
@@ -52,7 +65,7 @@ main {
     }
 
     .sidebar {
-        width: 250px;
+        width: 200px;
         height: 100vh;
         position: sticky;
         top: 0;
@@ -71,9 +84,19 @@ main {
     }
 
     .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
+/*        padding-left: 2rem !important;*/
+/*        padding-right: 1.5rem !important;*/
     }
+}
+article {
+/*    margin: 0px;
+    padding: 0px;*/
+    /* This is the div that contains @Body content (your page) */
+    flex-grow: 1; /* Make the article grow to fill ALL remaining vertical space */
+    display: flex; /* Optional: Useful if your page content needs to use flexbox */
+    flex-direction: column;
+    padding: 0; /* Remove default padding that might restrict height */
+    height: 100%; /* Important: Tell it to fill the height of its parent (main) */
 }
 
 #blazor-error-ui {

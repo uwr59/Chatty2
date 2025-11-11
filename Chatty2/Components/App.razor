@@ -1,6 +1,8 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 
+    @using Radzen
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,17 +10,18 @@
     <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["Chatty2.styles.css"]" />
-    @* <link rel="stylesheet" href="_content/Radzen.Blazor/css/default.css"> *@
-    <link rel="stylesheet" href="_content/Radzen.Blazor/css/software.css">
+
+    <!-- Radzen base CSS (required) -->
+    <link rel="stylesheet" href="_content/Radzen.Blazor/css/radzen.css" />
+    <!-- Radzen theme -->
+    <link rel="stylesheet" href="_content/Radzen.Blazor/css/software.css" />
+
 
     @* <link href="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/css/Open-Iconic/font/css/open-iconic-bootstrap.min.css" rel="stylesheet" /> *@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/open-iconic/1.1.1/font/css/open-iconic-bootstrap.min.css" />
 
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
 
-
-    @* <RadzenTheme Theme="material" /> *@
-    <RadzenTheme Theme="software" />
 
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />

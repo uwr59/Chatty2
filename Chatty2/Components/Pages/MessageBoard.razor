@@ -19,7 +19,7 @@
                     <div class="message-body">
                         @message.Content
                     </div>
-                    <button class="btn btn-sm pin-button" @onclick="() => TogglePin(message.Id)" aria-pressed="@message.IsPinned">
+                    <button class="btn btn-sm pin-button rz-ripple" @onclick="() => TogglePin(message.Id)" aria-pressed="@message.IsPinned">
                         @if (message.IsPinned)
                         {
                             <span class="oi oi-pin" title="Unpin Message"></span>
@@ -57,7 +57,7 @@
                     <div class="message-body">
                         @message.Content
                     </div>
-                    <button class="btn btn-sm pin-button" @onclick="() => TogglePin(message.Id)" aria-pressed="@message.IsPinned">
+                    <button class="btn btn-sm pin-button rz-ripple" @onclick="() => TogglePin(message.Id)" aria-pressed="@message.IsPinned">
                         @if (message.IsPinned)
                         {
                             <span class="oi oi-pin" title="Unpin Message"></span>
@@ -76,7 +76,7 @@
 
 <div class="message-input">
     <textarea rows="1" @bind="NewMessageContent" @bind:event="oninput" maxlength="@MAX_TEXT_COUNT" placeholder="Type message..."></textarea>
-    <button @onclick="PostMessage">Post</button>
+    <button class="rz-ripple" @onclick="PostMessage">Post</button>
 
 </div>
 <span style="font-size:9px;margin-left:20px;">@(NewMessageContent.Length)/@(MAX_TEXT_COUNT)</span>
@@ -102,17 +102,9 @@
     //calc remaining chars for text input
     const int MAX_TEXT_COUNT = 64;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Sample messages (replace with database fetching later)
-        Messages.Add(new Message { Id = 1, IsPinned = false, Username = "Broxholme, Ben", Content = "Am logging on to Core", Timestamp = new DateTime(2023, 09, 18, 12, 11, 0) });
-        Messages.Add(new Message { Id = 2, IsPinned = false, Username = "Broxholme, Ben", Content = "logging off core", Timestamp = new DateTime(2023, 09, 18, 18, 51, 0) });
-        Messages.Add(new Message { Id = 3, IsPinned = false, Username = "Hudson, Christopher", Content = "FYI I will be going onto Proto to timetable the plans for the Leeds United v Tottenham Hotspur match on Saturday 4 October.", Timestamp = new DateTime(2023, 09, 29, 12, 31, 0) });
-        Messages.Add(new Message { Id = 4, IsPinned = false, Username = "Hudson, Christopher", Content = "I have now finished using Proto after timetabling the plans for the Leeds United v Tottenham Hotspur football match.", Timestamp = new DateTime(2023, 09, 29, 12, 48, 0) });
-
-        // Sort initial messages and set the initial date for separator logic
-        Messages = Messages.OrderBy(m => m.Timestamp).ToList();
-        // LastMessageDate = new DateTime(2000, 1, 1); Reset the tracker
+        Messages = await UTC_DB.FetchMessagesAsync();
     }
 
     private async Task PostMessage()
@@ -146,6 +138,13 @@
         if (message != null)
         {
             message.IsPinned = !message.IsPinned;
+            Console.WriteLine($"Message with id:{messageId} was pinned:{message.IsPinned}");
+
+            // *** After pin is updated need to update the database table and re read again?
+            // await new function UpdateMessagePin(messageId)
+            // *** After posting need to reread the messages to re populate the list
+            // Messages.Clear();
+            // Messages = await UTC_DB.FetchMessagesAsync();
 
             // The list will be re-sorted on every render, but we trigger it here
             StateHasChanged();

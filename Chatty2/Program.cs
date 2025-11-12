@@ -2,6 +2,10 @@ using Chatty2.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// **ACCESS AND SET STATIC FIELD HERE**
+var authorityValue = builder.Configuration["Authority"];
+Chatty2.Services.UTC_DB.authority = authorityValue; // Set the static field
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

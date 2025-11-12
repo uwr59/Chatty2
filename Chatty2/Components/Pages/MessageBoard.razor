@@ -1,7 +1,7 @@
 ﻿@page "/messageboard"
 @using Chatty2.Services
 
-<span style="padding-left:10px;">Message Board</span>
+<span style="padding-left:10px;">Message Board for: @UTC_DB.authority</span>
 <div class="message-list-wrapper">
     @* Pinned messages first, then a splitter, then non-pinned messages *@
     @if (PinnedMessages.Any())
@@ -19,7 +19,7 @@
                     <div class="message-body">
                         @message.Content
                     </div>
-                    <button class="btn btn-sm pin-button rz-ripple" @onclick="() => TogglePin(message.Id)" aria-pressed="@message.IsPinned">
+                    <button class="btn btn-sm pin-button" @onclick="() => TogglePin(message.Id)" aria-pressed="@message.IsPinned">
                         @if (message.IsPinned)
                         {
                             <span class="oi oi-pin" title="Unpin Message"></span>
@@ -57,7 +57,7 @@
                     <div class="message-body">
                         @message.Content
                     </div>
-                    <button class="btn btn-sm pin-button rz-ripple" @onclick="() => TogglePin(message.Id)" aria-pressed="@message.IsPinned">
+                    <button class="btn btn-sm pin-button" @onclick="() => TogglePin(message.Id)" aria-pressed="@message.IsPinned">
                         @if (message.IsPinned)
                         {
                             <span class="oi oi-pin" title="Unpin Message"></span>
@@ -100,7 +100,7 @@
     // .OrderByDescending(m => m.Timestamp);
 
     //calc remaining chars for text input
-    const int MAX_TEXT_COUNT = 64;
+    const int MAX_TEXT_COUNT = 128;
 
     protected override async Task OnInitializedAsync()
     {
@@ -254,7 +254,8 @@
         /* font-weight: bold; */
         color: blue; /* Make sender stand out */
         font-size: smaller;
-        margin: 0px;
+        margin: 0px 5px 0px 5px;
+
     }
 
     .timestamp {

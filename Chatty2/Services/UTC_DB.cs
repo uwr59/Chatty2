@@ -8,6 +8,7 @@ namespace Chatty2.Services
 {
     public class UTC_DB
     {
+        public static string authority = "Leeds";
         public static short commandTimeout = 5;   // DB Query timeout
         public static string dbConnectionString = "Host=10.61.142.7;Database=UTC_Dev;Username=postgres;Password=Spring27fox;Timeout=5;";
         public static List<Message> MessageList = new List<Message>();  //

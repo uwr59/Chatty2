@@ -1,88 +1,87 @@
-﻿@page "/messageboard"
+﻿@page "/originalmessageboard"
 @using Chatty2.Services
 
-<div class="messageboard-container">
-    <span style="padding-left:10px;">Messageboard for: @UTC_DB.authority</span>
-    <div class="message-list-wrapper">
-
-        @* Pinned messages first, then a splitter, then non-pinned messages *@
-
-        @if (PinnedMessages.Any())
+<span style="padding-left:10px;">Message Board for: @UTC_DB.authority</span>
+<div class="message-list-wrapper">
+    @* Pinned messages first, then a splitter, then non-pinned messages *@
+    @if (PinnedMessages.Any())
+    {
+        @foreach (var message in PinnedMessages)
         {
-            <div class="pinned-list">
-                @foreach (var message in PinnedMessages)
-                {
-                    <div class="single-message-item @(message.IsPinned ? "pinned" : "")">
+            <div class="single-message-item @(message.IsPinned ? "pinned" : "")">
 
-                        <div class="">
-                            <span class="sender">@message.Username</span>
-                            <small class="timestamp">@message.Timestamp.ToLocalTime()</small>
-                        </div>
+                <div class="">
+                    <span class="sender">@message.Username</span>
+                    <small class="timestamp">@message.Timestamp.ToLocalTime()</small>
+                </div>
 
-                        <div class="message-row">
-                            <div class="message-body">
-                                @message.Content
-                            </div>
-                            <button class="btn btn-sm pin-button" @onclick="() => TogglePin(message.Id)" aria-pressed="@message.IsPinned">
-                                @if (message.IsPinned)
-                                {
-                                    <span class="oi oi-pin" title="Unpin Message"></span>
-                                }
-                                else
-                                {
-                                    <span class="oi oi-pin" title="Pin Message" style="color: lightgrey;"></span>
-                                }
-                            </button>
-                        </div>
-
+                <div class="message-row">
+                    <div class="message-body">
+                        @message.Content
                     </div>
-                }
+                    <button class="btn btn-sm pin-button" @onclick="() => TogglePin(message.Id)" aria-pressed="@message.IsPinned">
+                        @if (message.IsPinned)
+                        {
+                            <span class="oi oi-pin" title="Unpin Message"></span>
+                        }
+                        else
+                        {
+                            <span class="oi oi-pin" title="Pin Message" style="color: lightgrey;"></span>
+                        }
+                    </button>
+                </div>
+
             </div>
         }
+    }
 
+    @if (PinnedMessages.Any() && UnpinnedMessages.Any())
+    {
+        <div class="splitter" role="separator" aria-label="Pinned / Unpinned separator">
+            <span class="splitter-label">Unpinned messages</span>
+        </div>
+    }
 
-        @if (UnpinnedMessages.Any())
+    @if (UnpinnedMessages.Any())
+    {
+        @foreach (var message in UnpinnedMessages)
         {
-            <div class="unpinned-list">
-                @foreach (var message in UnpinnedMessages)
-                {
-                    <div class="single-message-item @(message.IsPinned ? "pinned" : "")">
+            <div class="single-message-item @(message.IsPinned ? "pinned" : "")">
 
-                        <div class="">
-                            <span class="sender">@message.Username</span>
-                            <small class="timestamp">@message.Timestamp.ToLocalTime()</small>
-                        </div>
+                <div class="">
+                    <span class="sender">@message.Username</span>
+                    <small class="timestamp">@message.Timestamp.ToLocalTime()</small>
+                </div>
 
-                        <div class="message-row">
-                            <div class="message-body">
-                                @message.Content
-                            </div>
-                            <button class="btn btn-sm pin-button" @onclick="() => TogglePin(message.Id)" aria-pressed="@message.IsPinned">
-                                @if (message.IsPinned)
-                                {
-                                    <span class="oi oi-pin" title="Unpin Message"></span>
-                                }
-                                else
-                                {
-                                    <span class="oi oi-pin" title="Pin Message" style="color: lightgrey;"></span>
-                                }
-                            </button>
-                        </div>
-
+                <div class="message-row">
+                    <div class="message-body">
+                        @message.Content
                     </div>
-                }
+                    <button class="btn btn-sm pin-button" @onclick="() => TogglePin(message.Id)" aria-pressed="@message.IsPinned">
+                        @if (message.IsPinned)
+                        {
+                            <span class="oi oi-pin" title="Unpin Message"></span>
+                        }
+                        else
+                        {
+                            <span class="oi oi-pin" title="Pin Message" style="color: lightgrey;"></span>
+                        }
+                    </button>
+                </div>
+
             </div>
         }
-    </div>
+    }
+</div>
 
-    <div class="message-input">
-        <textarea rows="1" @bind="NewMessageContent" @bind:event="oninput" maxlength="@MAX_TEXT_COUNT" placeholder="Type message..."></textarea>
-        <button class="rz-ripple" @onclick="PostMessage">Post</button>
-
-    </div>
-    <span style="font-size:9px;margin-left:20px;margin-bottom:5px;">@(NewMessageContent.Length)/@(MAX_TEXT_COUNT)</span>
+<div class="message-input">
+    <textarea rows="1" @bind="NewMessageContent" @bind:event="oninput" maxlength="@MAX_TEXT_COUNT" placeholder="Type message..."></textarea>
+    <button class="rz-ripple" @onclick="PostMessage">Post</button>
 
 </div>
+<span style="font-size:9px;margin-left:20px;">@(NewMessageContent.Length)/@(MAX_TEXT_COUNT)</span>
+
+
 
 @code {
     private List<Message> Messages { get; set; } = new List<Message>();
@@ -101,7 +100,7 @@
             .Where(m => !m.IsPinned);
     // .OrderByDescending(m => m.Timestamp);
 
-
+    
 
     protected override async Task OnInitializedAsync()
     {
@@ -143,24 +142,15 @@
 }
 
 <style>
-    .messageboard-container {
-        /* margin: 2px; */
-        border: 1px solid;
-        border-radius:5px;
-        display:flex;
-        flex-direction:column;
-        height:100%;
-    }
-
     /* New CSS for the OUTER SCROLLABLE CONTAINER */
     .message-list-wrapper {
         /* box-sizing: border-box; */
-        /* border: 1px solid red; */
+        border: 1px solid red;
         border-bottom: none;
-        margin: 1px;
+        margin: 10px;
         margin-bottom: 0px;
-        padding: 1px;
-        height: 100vh; /* Fixed height for the viewport */
+        padding: 10px;
+        height: 400px; /* Fixed height for the viewport */
         overflow-y: auto; /* Apply the scrollbar here */
         display: flex;
         flex-direction: column;
@@ -170,37 +160,23 @@
         font-size: 12px;
     }
 
-    .pinned-list {
-        border: 1px solid blue;
-        /* border-bottom: none; */
-        margin-bottom: 5px;
-        min-height: 56px;
-        height: auto;
-        max-height: 312px;
-        overflow: auto;
-    }
-
-    .unpinned-list {
-        border: 1px solid blue;
-        min-height: 240px;
-        overflow: auto;
-    }
-
+    /* Rename your old .message-container to be the single item */
     .single-message-item {
         /* Ensure the inner item does NOT have a fixed height or overflow-y */
-        margin: 2px 2px 0px 2px;
+        margin-bottom: 2px;
         padding: 0px 0px 0px 0px;
         max-width: 100%;
         word-wrap: break-word;
-        border-radius: 7px;
+        background-color: transparent;
+        /* border: 1px solid #aaa; */
+        border-radius: 5px;
         box-shadow: none;
-        border: 1px solid #727233;
         align-self: stretch; /* make item stretch to container width */
     }
         /* Pinned variant: orange background */
         .single-message-item.pinned {
             background-color: #ffe066; /* orange */
-            border: 1px solid #727233;
+            border-color: #ff8c00;
             color: #1b1b1b;
         }
             /* When pinned, show message body transparent so the orange background is visible */
@@ -254,10 +230,21 @@
             box-shadow: none;
         }
 
+    /* Keep an accessible visible focus for keyboard users */
+    /* .pin-button:focus-visible {
+                outline: 2px solid rgba(0, 123, 255, 0.6);
+                outline-offset: 2px;
+                box-shadow: none !important;
+            } */
+
+
+
     .sender {
+        /* font-weight: bold; */
         color: blue; /* Make sender stand out */
         font-size: smaller;
         margin: 0px 5px 0px 5px;
+
     }
 
     .timestamp {
@@ -266,15 +253,25 @@
     }
 
     .message-content {
+        /* font-size: 0.95em; */
+        /* line-height: 1.4; */
         margin: 0px 5px; /* Ensure content starts at the edge */
     }
+
+    /* .date-separator {
+            text-align: center;
+            margin: 15px 0;
+            position: relative;
+            font-size: 0.8em;
+            color: #777;
+        } */
 
     .message-input {
         display: flex;
         align-items: center;
-        margin: 1px;
-        /* margin-right: 10px; */
-        /* border: 1px solid red; */
+        margin-left: 10px;
+        margin-right: 10px;
+        border: 1px solid red;
         border-bottom-left-radius: 5px;
         border-bottom-right-radius: 5px;
         overflow: hidden;
@@ -286,14 +283,14 @@
             flex-grow: 1;
             /* background-color: lawngreen; */
             border-radius: 5px;
-            margin: 4px;
-            padding: 5px;
+            margin: 2px 10px;
+            padding: 10px;
             resize: none; /* Disable manual resizing */
         }
 
         /* .message-input textarea:focus {
 
-                            } */
+                } */
 
         .message-input button {
             background-color: #007bff;

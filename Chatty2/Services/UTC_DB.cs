@@ -9,6 +9,7 @@ namespace Chatty2.Services
     public class UTC_DB
     {
         public static string authority = "Leeds";
+
         public static short commandTimeout = 5;   // DB Query timeout
         public static string dbConnectionString = "Host=10.61.142.7;Database=UTC_Dev;Username=postgres;Password=Spring27fox;Timeout=5;";
         public static List<Message> MessageList = new List<Message>();  //
@@ -42,9 +43,41 @@ namespace Chatty2.Services
             }
         }
 
+        public static async Task UpdatePinnedStatus(int messageId)
+        {
+            try
+            {
+                await using var dataSource = NpgsqlDataSource.Create(dbConnectionString);
+
+                await using (var cmd = dataSource.CreateCommand("UPDATE user_messages SET ispinned = NOT ispinned WHERE _id = @p1;"))
+                {
+                    cmd.CommandTimeout = commandTimeout;
+
+                    // 3. Add the parameter for the message ID
+                    cmd.Parameters.AddWithValue("p1", messageId);
+
+                    // 4. Execute the command
+                    await cmd.ExecuteNonQueryAsync();
+                }
+                dataSource.Dispose();
+            }
+            catch (NpgsqlException MyNpgsqlException)// Catch Npsql Exception
+            {
+                Console.WriteLine("Npsql Exception in UpdatePinnedStatus() - " + MyNpgsqlException.ToString());
+            }
+            catch (Exception MyException)// Catch program exception
+            {
+                Console.WriteLine("Program Exception in UpdatePinnedStatus() - " + MyException.ToString());
+            }
+        }
+
+
+
+
+
         public static async Task<List<Message>> FetchMessagesAsync()
         {
-            Console.WriteLine("Function FetchMessagesAsync() - STARTED");
+            //Console.WriteLine("Function FetchMessagesAsync() - STARTED");
 
             try
             {
@@ -80,7 +113,7 @@ namespace Chatty2.Services
                         reader.Close();
                         //Console.WriteLine("Function GetMapScnList() - ENDED");
                         MessageList.Sort((x, y) => x.Id.CompareTo(y.Id));
-                        MessageList.ForEach(msg => Console.WriteLine($"msg id:{msg.Id} - user:{msg.Username} - msg:{msg.Content} - time:{msg.Timestamp} - pinned:{msg.IsPinned}"));
+                        //MessageList.ForEach(msg => Console.WriteLine($"msg id:{msg.Id} - user:{msg.Username} - msg:{msg.Content} - time:{msg.Timestamp} - pinned:{msg.IsPinned}"));
                     }
                 }
                 dataSource.Dispose();

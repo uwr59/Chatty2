@@ -111,10 +111,8 @@
     {
         if (!string.IsNullOrWhiteSpace(NewMessageContent))
         {
-            // Post the new message
             await UTC_DB.InsertMessageAsync(new Message
             {
-                // Id = newId,
                 Username = "You", // Or get the current logged-in user
                 Content = NewMessageContent,
                 Timestamp = DateTime.Now,
@@ -126,25 +124,26 @@
             Messages = await UTC_DB.FetchMessagesAsync();
 
             // Get the next unique ID???
-            int newId = Messages.Any() ? Messages.Max(m => m.Id) + 1 : 1;
+            // int newId = Messages.Any() ? Messages.Max(m => m.Id) + 1 : 1;
 
             NewMessageContent = string.Empty; // Clear the input field
         }
     }
 
-    private void TogglePin(int messageId)
+    private async Task TogglePin(int messageId)
     {
         var message = Messages.FirstOrDefault(m => m.Id == messageId);
         if (message != null)
         {
             message.IsPinned = !message.IsPinned;
-            Console.WriteLine($"Message with id:{messageId} was pinned:{message.IsPinned}");
+            // Console.WriteLine($"Message with id:{messageId} was pinned:{message.IsPinned}");
 
             // *** After pin is updated need to update the database table and re read again?
-            // await new function UpdateMessagePin(messageId)
+            await UTC_DB.UpdatePinnedStatus(messageId);
+
             // *** After posting need to reread the messages to re populate the list
-            // Messages.Clear();
-            // Messages = await UTC_DB.FetchMessagesAsync();
+            Messages.Clear();
+            Messages = await UTC_DB.FetchMessagesAsync();
 
             // The list will be re-sorted on every render, but we trigger it here
             StateHasChanged();

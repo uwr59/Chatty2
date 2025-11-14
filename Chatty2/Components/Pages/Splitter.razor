@@ -1,19 +1,19 @@
 ﻿@page "/splitter"
 
 <div class="splitter-container">
-    <RadzenSplitter Orientation="Orientation.Vertical" Collapse=@OnCollapse Expand=@OnExpand style="height: 100%; border: 1px solid blue;">
-        <RadzenSplitterPane Size="100%">
-            <RadzenSplitter Collapse=@OnCollapse Expand=@OnExpand>
-                <RadzenSplitterPane Size="50%" Min="30px" Max="70%">
-                    <MessageBoard/>
-                </RadzenSplitterPane>
-                <RadzenSplitterPane>
-                    Pane A2
-                </RadzenSplitterPane>
-            </RadzenSplitter>
+
+    <RadzenSplitter Collapse=@OnCollapse Expand=@OnExpand style="height: 100%; border: 1px solid blue;">
+        
+        <RadzenSplitterPane Size="50%" Min="30px" Max="70%">
+            <MessageBoard />
+        </RadzenSplitterPane>
+
+        <RadzenSplitterPane>
+            Pane A2
         </RadzenSplitterPane>
 
     </RadzenSplitter>
+
 </div>
 
 
@@ -57,8 +57,8 @@
         padding: 0px;
     }
     /* IMPORTANT: The RadzenSplitter itself already has 'style="height: 100%;"'
-               which allows it to fill this container.
-            */
+                   which allows it to fill this container.
+                */
 
 
 </style>

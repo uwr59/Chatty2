@@ -87,25 +87,30 @@
 @code {
     private List<Message> Messages { get; set; } = new List<Message>();
     private string NewMessageContent { get; set; } = string.Empty;
-    // private bool ShowDateSeparator { get; set; } = false; You can implement logic for this
-    // private DateTime LastMessageDate = DateTime.MinValue;
     const int MAX_TEXT_COUNT = 128;
 
-    private IEnumerable<Message> PinnedMessages =>
-        Messages
-            .Where(m => m.IsPinned);
-    // .OrderByDescending(m => m.Timestamp);
-
-    private IEnumerable<Message> UnpinnedMessages =>
-        Messages
-            .Where(m => !m.IsPinned);
-    // .OrderByDescending(m => m.Timestamp);
-
-
+    private IEnumerable<Message> PinnedMessages => Messages.Where(m => m.IsPinned);
+    private IEnumerable<Message> UnpinnedMessages => Messages.Where(m => !m.IsPinned);
 
     protected override async Task OnInitializedAsync()
     {
+        // Subscribe so all open clients get updates
+        UTC_DB.MessagesChanged += OnMessagesChanged;
         Messages = await UTC_DB.FetchMessagesAsync();
+    }
+
+    // Event handler invoked when another client changes data
+    private async void OnMessagesChanged()
+    {
+        try
+        {
+            await InvokeAsync(async () =>
+            {
+                Messages = await UTC_DB.FetchMessagesAsync();
+                StateHasChanged();
+            });
+        }
+        catch { /* swallow */ }
     }
 
     private async Task PostMessage()
@@ -114,15 +119,14 @@
         {
             await UTC_DB.InsertMessageAsync(new Message
             {
-                Username = "You", // Or get the current logged-in user
+                Username = "You", // Replace with logged-in user
                 Content = NewMessageContent,
                 Timestamp = DateTime.Now,
                 IsPinned = false
             });
-            //After posting need to reread the messages to re populate the list
-            Messages.Clear();
+            // Local refresh (remote clients will refresh via event)
             Messages = await UTC_DB.FetchMessagesAsync();
-            NewMessageContent = string.Empty; // Clear the input field
+            NewMessageContent = string.Empty;
         }
     }
 
@@ -131,181 +135,37 @@
         var message = Messages.FirstOrDefault(m => m.Id == messageId);
         if (message != null)
         {
-            message.IsPinned = !message.IsPinned;
+            message.IsPinned = !message.IsPinned; // optimistic UI
             await UTC_DB.UpdatePinnedStatus(messageId);
-            // *** After posting need to reread the messages to re populate the list
-            Messages.Clear();
             Messages = await UTC_DB.FetchMessagesAsync();
-            // The list will be re-sorted on every render, but we trigger it here
             StateHasChanged();
         }
+    }
+
+    public void Dispose()
+    {
+        UTC_DB.MessagesChanged -= OnMessagesChanged;
     }
 }
 
 <style>
-    .messageboard-container {
-        /* margin: 2px; */
-        border: 1px solid;
-        border-radius:5px;
-        display:flex;
-        flex-direction:column;
-        height:100%;
-    }
-
-    /* New CSS for the OUTER SCROLLABLE CONTAINER */
-    .message-list-wrapper {
-        /* box-sizing: border-box; */
-        /* border: 1px solid red; */
-        border-bottom: none;
-        margin: 1px;
-        margin-bottom: 0px;
-        padding: 1px;
-        height: 100vh; /* Fixed height for the viewport */
-        overflow-y: auto; /* Apply the scrollbar here */
-        display: flex;
-        flex-direction: column;
-        background-color: #fff;
-        border-top-left-radius: 5px;
-        border-top-right-radius: 5px;
-        font-size: 12px;
-    }
-
-    .pinned-list {
-        border: 1px solid blue;
-        /* border-bottom: none; */
-        margin-bottom: 5px;
-        min-height: 56px;
-        height: auto;
-        max-height: 312px;
-        overflow: auto;
-    }
-
-    .unpinned-list {
-        border: 1px solid blue;
-        min-height: 240px;
-        overflow: auto;
-    }
-
-    .single-message-item {
-        /* Ensure the inner item does NOT have a fixed height or overflow-y */
-        margin: 2px 2px 0px 2px;
-        padding: 0px 0px 0px 0px;
-        max-width: 100%;
-        word-wrap: break-word;
-        border-radius: 7px;
-        box-shadow: none;
-        border: 1px solid #727233;
-        align-self: stretch; /* make item stretch to container width */
-    }
-        /* Pinned variant: orange background */
-        .single-message-item.pinned {
-            background-color: #ffe066; /* orange */
-            border: 1px solid #727233;
-            color: #1b1b1b;
-        }
-            /* When pinned, show message body transparent so the orange background is visible */
-            .single-message-item.pinned .message-body {
-                background-color: transparent;
-                color: #1b1b1b;
-            }
-
-    .message {
-        margin-bottom: 12px;
-        padding: 0px 0px; /* Minimal padding for a list look */
-        max-width: 100%; /* Use full width */
-        word-wrap: break-word;
-        /* REMOVE all bubble styling */
-        background-color: lightgrey;
-        border-radius: 7px;
-        box-shadow: none;
-        align-self: flex-start; /* Ensure all messages align left */
-    }
-
-    .message-row {
-        display: flex;
-        align-items: flex-start;
-        gap: 2px;
-        width: 100%; /* ensure the row fills the item */
-    }
-
-    .message-body {
-        /* border: 1px solid; */
-        border-radius: 5px;
-        padding: 5px 10px;
-        background-color: #eee;
-        color: #333;
-        flex: 1 1 auto; /* stretch to fill remaining space */
-        min-width: 0; /* allow shrinking inside flex container */
-        white-space: pre-wrap;
-        word-break: break-word;
-        overflow-wrap: break-word;
-    }
-
-    .pin-button {
-        flex: 0 0 auto; /* never grow, don't shrink below content */
-        align-self: center;
-        margin-left: 4px;
-        height: auto;
-        outline: none;
-    }
-        /* Prevent focus ring for mouse/touch (non-keyboard) interactions */
-        .pin-button:focus:not(:focus-visible) {
-            outline: none;
-            box-shadow: none;
-        }
-
-    .sender {
-        color: blue; /* Make sender stand out */
-        font-size: smaller;
-        margin: 0px 5px 0px 5px;
-    }
-
-    .timestamp {
-        font-size: smaller;
-        color: #777;
-    }
-
-    .message-content {
-        margin: 0px 5px; /* Ensure content starts at the edge */
-    }
-
-    .message-input {
-        display: flex;
-        align-items: center;
-        margin: 1px;
-        /* margin-right: 10px; */
-        /* border: 1px solid red; */
-        border-bottom-left-radius: 5px;
-        border-bottom-right-radius: 5px;
-        overflow: hidden;
-        background-color: white;
-        font-size: 12px;
-    }
-
-        .message-input textarea {
-            flex-grow: 1;
-            /* background-color: lawngreen; */
-            border-radius: 5px;
-            margin: 4px;
-            padding: 5px;
-            resize: none; /* Disable manual resizing */
-        }
-
-        /* .message-input textarea:focus {
-
-                            } */
-
-        .message-input button {
-            background-color: #007bff;
-            color: white;
-            margin: 2px 10px;
-            padding: 2px 5px;
-            cursor: pointer;
-            border-radius: 3px;
-            font-size: 12px;
-        }
-
-            .message-input button:hover {
-                background-color: #0056b3;
-            }
+    .messageboard-container { border: 1px solid; border-radius:5px; display:flex; flex-direction:column; height:100%; }
+    .message-list-wrapper { margin: 1px; margin-bottom: 0px; padding: 1px; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; background-color: #fff; border-top-left-radius: 5px; border-top-right-radius: 5px; font-size: 12px; }
+    .pinned-list { border: 1px solid blue; margin-bottom: 5px; min-height: 56px; height: auto; max-height: 312px; overflow: auto; }
+    .unpinned-list { border: 1px solid blue; min-height: 240px; overflow: auto; }
+    .single-message-item { margin: 2px 2px 0px 2px; padding: 0px; max-width: 100%; word-wrap: break-word; border-radius: 7px; box-shadow: none; border: 1px solid #727233; align-self: stretch; }
+    .single-message-item.pinned { background-color: #ffe066; border: 1px solid #727233; color: #1b1b1b; }
+    .single-message-item.pinned .message-body { background-color: transparent; color: #1b1b1b; }
+    .message { margin-bottom: 12px; padding: 0px; max-width: 100%; word-wrap: break-word; background-color: lightgrey; border-radius: 7px; box-shadow: none; align-self: flex-start; }
+    .message-row { display: flex; align-items: flex-start; gap: 2px; width: 100%; }
+    .message-body { border-radius: 5px; padding: 5px 10px; background-color: #eee; color: #333; flex: 1 1 auto; min-width: 0; white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word; }
+    .pin-button { flex: 0 0 auto; align-self: center; margin-left: 4px; height: auto; outline: none; }
+    .pin-button:focus:not(:focus-visible) { outline: none; box-shadow: none; }
+    .sender { color: blue; font-size: smaller; margin: 0px 5px; }
+    .timestamp { font-size: smaller; color: #777; }
+    .message-content { margin: 0px 5px; }
+    .message-input { display: flex; align-items: center; margin: 1px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; overflow: hidden; background-color: white; font-size: 12px; }
+    .message-input textarea { flex-grow: 1; border-radius: 5px; margin: 4px; padding: 5px; resize: none; }
+    .message-input button { background-color: #007bff; color: white; margin: 2px 10px; padding: 2px 5px; cursor: pointer; border-radius: 3px; font-size: 12px; }
+    .message-input button:hover { background-color: #0056b3; }
 </style>

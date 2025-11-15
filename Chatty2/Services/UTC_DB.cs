@@ -14,6 +14,9 @@ namespace Chatty2.Services
         public static string dbConnectionString = "Host=10.61.142.7;Database=UTC_Dev;Username=postgres;Password=Spring27fox;Timeout=5;";
         public static List<Message> MessageList = new List<Message>();  //
 
+        public static event Action? MessagesChanged; // Raised when messages list or pin state changes
+        private static void NotifyMessagesChanged() => MessagesChanged?.Invoke();
+
         public static async Task InsertMessageAsync(Message message)
         {
             try
@@ -32,6 +35,9 @@ namespace Chatty2.Services
                 }
                 dataSource.Dispose();
                 Console.WriteLine("Function InsertMessage() - ENDED");
+
+                // Notify all subscribers (other connected clients) that messages changed
+                NotifyMessagesChanged();
             }
             catch (NpgsqlException MyNpgsqlException)// Catch Npsql Exception
             {
@@ -60,6 +66,9 @@ namespace Chatty2.Services
                     await cmd.ExecuteNonQueryAsync();
                 }
                 dataSource.Dispose();
+
+                // Notify after pin status change
+                NotifyMessagesChanged();
             }
             catch (NpgsqlException MyNpgsqlException)// Catch Npsql Exception
             {
@@ -70,10 +79,6 @@ namespace Chatty2.Services
                 Console.WriteLine("Program Exception in UpdatePinnedStatus() - " + MyException.ToString());
             }
         }
-
-
-
-
 
         public static async Task<List<Message>> FetchMessagesAsync()
         {

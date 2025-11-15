@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@inject Radzen.NotificationService NotificationService
+@implements IDisposable
 
 <div class="page">
     <div class="sidebar">
@@ -16,8 +18,36 @@
     </main>
 </div>
 
+<!-- Radzen Notification host -->
+<RadzenNotification />
+
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Chatty2.Services.UTC_DB.MessagesChanged += OnMessagesChanged;
+    }
+
+    private void OnMessagesChanged()
+    {
+        _ = InvokeAsync(() => NotificationService.Notify(new NotificationMessage
+        {
+            Severity = NotificationSeverity.Info,
+            Summary = "Message board updated",
+            Detail = "Messages or pin status changed.",
+            // Style = "position: absolute;",
+            Duration = 5000,
+            ShowProgress = true
+        }));
+    }
+
+    public void Dispose()
+    {
+        Chatty2.Services.UTC_DB.MessagesChanged -= OnMessagesChanged;
+    }
+}

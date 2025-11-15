@@ -1,4 +1,5 @@
 using Chatty2.Components;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,9 @@ Chatty2.Services.UTC_DB.authority = authorityValue; // Set the static field
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Radzen services (for NotificationService, etc.)
+builder.Services.AddRadzenComponents();
 
 var app = builder.Build();
 

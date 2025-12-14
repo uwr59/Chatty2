@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @inject Radzen.NotificationService NotificationService
+@implements IDisposable
 
 <div class="page">
     <div class="sidebar">
@@ -7,13 +8,17 @@
     </div>
 
     <main>
+        @* <div class="top-row px-4">
+            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        </div> *@
+
         <article class="content px-4">
             @Body
         </article>
     </main>
 </div>
 
-<!-- Radzen Notification host (single global host) -->
+<!-- Radzen Notification host -->
 <RadzenNotification />
 
 <div id="blazor-error-ui" data-nosnippet>
@@ -23,5 +28,26 @@
 </div>
 
 @code {
-    // No event subscription here; MessageBoard handles its own refresh + notification.
+    protected override void OnInitialized()
+    {
+        Chatty2.Services.UTC_DB.MessagesChanged += OnMessagesChanged;
+    }
+
+    private void OnMessagesChanged()
+    {
+        _ = InvokeAsync(() => NotificationService.Notify(new NotificationMessage
+        {
+            Severity = NotificationSeverity.Info,
+            Summary = "Message board updated",
+            Detail = "Messages or pin status changed.",
+            // Style = "position: absolute;",
+            Duration = 5000,
+            ShowProgress = true
+        }));
+    }
+
+    public void Dispose()
+    {
+        Chatty2.Services.UTC_DB.MessagesChanged -= OnMessagesChanged;
+    }
 }

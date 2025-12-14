@@ -1,6 +1,5 @@
 ﻿@page "/messageboard"
 @using Chatty2.Services
-@inject Radzen.NotificationService NotificationService
 
 <div class="messageboard-container">
     <span style="padding-left:10px;">Messageboard for: @UTC_DB.authority</span>
@@ -109,15 +108,6 @@
             {
                 Messages = await UTC_DB.FetchMessagesAsync();
                 StateHasChanged();
-
-                NotificationService.Notify(new NotificationMessage
-                {
-                    Severity = NotificationSeverity.Info,
-                    Summary = "Message board updated",
-                    Detail = " New message or pinned status changed.",
-                    Duration = 4000,
-                    ShowProgress = true
-                });
             });
         }
         catch { /* swallow */ }
@@ -127,27 +117,15 @@
     {
         if (!string.IsNullOrWhiteSpace(NewMessageContent))
         {
-            var user = "uwr1";
             await UTC_DB.InsertMessageAsync(new Message
             {
-                Username = user, // Replace with logged-in user
+                Username = "You", // Replace with logged-in user
                 Content = NewMessageContent,
                 Timestamp = DateTime.Now,
                 IsPinned = false
             });
             // Local refresh (remote clients will refresh via event)
             Messages = await UTC_DB.FetchMessagesAsync();
-
-            NotificationService.Notify(new NotificationMessage
-            {
-                Severity = NotificationSeverity.Info,
-                Summary = $"New message posted",
-                Detail = $"Message posted by {user}",
-                Duration = 4000,
-                ShowProgress = true
-            });
-
-
             NewMessageContent = string.Empty;
         }
     }

@@ -30,7 +30,7 @@
                 @(IsExpanded2 ? "-" : "+")
             </span>
             <span class="accordion__title-text">Condition 2:</span>
-            <InputText @bind-Value="ConditionTitle1" class="accordion__title-input" />
+            <InputText @bind-Value="ConditionTitle2" class="accordion__title-input" />
         </div>
 
         @if (IsExpanded2)
@@ -49,13 +49,13 @@
                 @(IsExpanded3 ? "-" : "+")
             </span>
             <span class="accordion__title-text">Condition 3:</span>
-            <InputText @bind-Value="ConditionTitle1" class="accordion__title-input" />
+            <InputText @bind-Value="ConditionTitle3" class="accordion__title-input" />
         </div>
 
         @if (IsExpanded3)
         {
             <div class="accordion__content">
-                Content for accordion section 2
+                Content for accordion section 3
             </div>
         }
     </section>
@@ -74,6 +74,9 @@
 
     // 2. Property to hold the value of the input box
     public string ConditionTitle1 { get; set; } = "A bus present on n/b approach...";
+    public string ConditionTitle2 { get; set; } = "A bus present on s/b approach...";
+    public string ConditionTitle3 { get; set; } = "A bus present on w/b approach...";
+
 
     // 3. Method to toggle the state when the header is clicked
     private void ToggleAccordion1()

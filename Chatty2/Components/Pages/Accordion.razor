@@ -17,7 +17,24 @@
         @if (IsExpanded1)
         {
             <div class="accordion__content">
-                Content for accordion section 1
+                <label style="">Parameter:</label>
+                <InputSelect id="parameter" @bind-Value="ConditionOneParam" style="margin-right:15px; width:120px" class="">
+                    <option value="" disabled>Select...</option>
+                    <option value="Option 1">Option 1</option>
+                    <option value="Option 1">Option 1</option>
+                    <option value="Option 2">Option 2</option>
+                    <option value="Option 3">Option 3</option>
+                </InputSelect>
+                <label style="">Operator:</label>
+                <InputSelect id="operator" @bind-Value="ConditionOneOperator" style="margin-right:15px; width:60px" class="">
+                    <option value="" disabled>Select...</option>
+                    <option value="="> =</option>
+                    <option value=">="> &gt;=</option>
+                    <option value="<"> &lt;</option>
+                    <option value="<="> &lt;=</option>
+                    <option value="!="> !=</option>
+                </InputSelect>
+                <InputNumber TValue="int" @bind-Value="ConditionOneValue" min="0" max="100" style="margin-right:15px; width:45px; height:22px"></InputNumber>
             </div>
         }
     </section>
@@ -60,7 +77,7 @@
         }
     </section>
 
-   
+
 </div>
 
 
@@ -74,8 +91,19 @@
 
     // 2. Property to hold the value of the input box
     public string ConditionTitle1 { get; set; } = "A bus present on n/b approach...";
+    public string ConditionOneParam { get; set; } = "";
+    public string ConditionOneOperator { get; set; } = "";
+    public int ConditionOneValue { get; set; } = 0;
+
     public string ConditionTitle2 { get; set; } = "A bus present on s/b approach...";
+    public string ConditionTwoParam { get; set; } = "";
+    public string ConditionTwoOperator { get; set; } = "";
+    public int ConditionTwoValue { get; set; } = 0;
+
     public string ConditionTitle3 { get; set; } = "A bus present on w/b approach...";
+    public string ConditionThreeParam { get; set; } = "";
+    public string ConditionThreeOperator { get; set; } = "";
+    public int ConditionThreeValue { get; set; } = 0;
 
 
     // 3. Method to toggle the state when the header is clicked
@@ -142,12 +170,11 @@
     }
 
         .accordion__icon-wrapper:hover {
-            font-weight:900;
+            font-weight: 900;
         }
 
     .accordion__title-text {
         padding-right: 10px;
-   
     }
 
     .accordion__title-input {
